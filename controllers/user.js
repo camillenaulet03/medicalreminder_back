@@ -56,10 +56,10 @@ User.create = async (req, res, next) => {
 };
 
 User.login = (req, res, next) => {
-  const email = req.body.email;
+  const email = req.body.email.toLowerCase();
   const password = req.body.password;
 
-  sql.query('SELECT * FROM user WHERE email = ?', [email.toLowerCase()], async (err, result) => {
+  sql.query('SELECT * FROM user WHERE email = ?', [email], async (err, result) => {
     if (err) {
       console.log("error: ", err);
       res.status(500).json({message: err});
@@ -77,13 +77,76 @@ User.login = (req, res, next) => {
       }
       const token = jwt.sign({userId: result[0].id}, process.env.JWT_KEY, {expiresIn: '24h'});
       const response = result[0];
-      res.status(200).json({response, token: token});
+      const client = require('twilio')(process.env.SID, process.env.TOKEN);
+      const verifySid = process.env.VAD;
+      await client.verify.v2
+        .services(verifySid)
+        .verifications.create({to: response.phone, channel: "sms", locale: 'fr'})
+        .then((verification) => {
+          sql.query(
+            "UPDATE user SET status = ? WHERE email = ?",
+            [verification.status, email],
+            (err, result) => {
+              if (err) {
+                console.log("error: ", err);
+                res.status(500).json({message: err});
+                return;
+              }
+
+              if (res.affectedRows == 0) {
+                res.status(500).json({kind: "not_found"});
+                return;
+              }
+
+              console.log("update status: ", {id: req.body.email.toLowerCase(), ...req.body});
+              res.status(200).json({response, token: token});          }
+          )
+        })
       return;
     }
 
     res.status(500).json({kind: "not_found"});
   });
 };
+
+User.verify = (req, res, next) => {
+  sql.query('SELECT * FROM user WHERE id = ?', [req.body.id], async (err, result) => {
+    if (err) {
+      console.log("error: ", err);
+      res.status(500).json({message: err});
+      return;
+    }
+    if (result.length) {
+      const client = require('twilio')(process.env.SID, process.env.TOKEN);
+      const verifySid = process.env.VAD;
+      client.verify.v2
+        .services(verifySid)
+        .verificationChecks.create({to: result[0].phone, code: req.body.code})
+        .then((verification_check) => {
+          sql.query(
+            "UPDATE user SET status = ? WHERE id = ?",
+            [verification_check.status, req.body.id],
+            (err, user) => {
+              if (err) {
+                console.log("error: ", err);
+                res.status(500).json({message: err});
+                return;
+              }
+
+              if (res.affectedRows == 0) {
+                res.status(500).json({kind: "not_found"});
+                return;
+              }
+              console.log("update status");
+              const response = result[0];
+              res.status(200).json({response});
+              return;
+            })
+        })
+    }
+  })
+
+}
 
 User.logout = (req, res, next) => {
   const email = req.body.email;
