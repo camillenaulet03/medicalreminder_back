@@ -76,12 +76,13 @@ User.login = (req, res, next) => {
         return res.status(401).json({ message: "Identifiants invalides !" });
       }
       const token = jwt.sign({userId: result[0].id}, process.env.JWT_KEY, {expiresIn: '24h'});
-      const response = result[0];
+      const id = result[0].id;
+      const phone = result[0].phone;
       const client = require('twilio')(process.env.SID, process.env.TOKEN);
       const verifySid = process.env.VAD;
       await client.verify.v2
         .services(verifySid)
-        .verifications.create({to: response.phone, channel: "sms", locale: 'fr'})
+        .verifications.create({to: phone, channel: "sms", locale: 'fr'})
         .then((verification) => {
           sql.query(
             "UPDATE user SET status = ? WHERE email = ?",
@@ -99,7 +100,8 @@ User.login = (req, res, next) => {
               }
 
               console.log("update status: ", {id: req.body.email.toLowerCase(), ...req.body});
-              res.status(200).json({response, token: token});          }
+              res.status(200).json({id, token: token});
+            }
           )
         })
       return;
@@ -138,10 +140,11 @@ User.verify = (req, res, next) => {
                 return;
               }
               console.log("update status");
-              const response = result[0];
-              res.status(200).json({response});
+              res.status(200).json({message: 'success'});
               return;
             })
+        }).catch(() => {
+          res.status(500);
         })
     }
   })
