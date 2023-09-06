@@ -1,7 +1,8 @@
 const sql = require("../database/db.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const User = require("../models/user")
+const transporter = require("../mailer/config");
+const User = require("../models/user");
 
 User.create = async (req, res, next) => {
   const password = req.body.password;
@@ -174,6 +175,92 @@ User.logout = (req, res, next) => {
 
     res.status(500).json({ kind: "not_found" });
   });
+};
+
+User.resetPassword = async (req, res, next) => {
+  const email = req.body.email;
+  sql.query(`SELECT * FROM user WHERE email = ?`, [email.toLowerCase()], (err, result) => {
+    if (err) {
+      console.log("error: ", err);
+      res.status(500).json({message: err});
+      return;
+    }
+
+    if (result.length) {
+      const user = result[0];
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_KEY, { expiresIn: '24h' });
+
+      const mailOptions = {
+        from: 'camille.naulet03@gmail.com',
+        to: email,
+        subject: 'Modifier votre mot de passe',
+        text: `Cliquez sur le lien suivant pour modifier votre mot de passe : process.env.ENVFRONT/change-password?token=${token}&userId=${user.id}`,
+        html: `<p>Cliquez sur le lien suivant pour modifier votre mot de passe : <a href="${process.env.ENVFRONT}/change-password?token=${token}&userId=${user.id}">Modifier mot de passe</a></p>`,
+      };
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+      const response = result[0];
+      res.status(200).json({response});
+      return;
+    }
+
+    res.status(500).json({ kind: "not_found" });
+  });
+};
+
+User.changePassword = async (req, res, next) => {
+  const password = req.body.password;
+  if (password.length < 8) {
+    return res.status(400).json({
+      message: "Le mot de passe doit au moins faire 8 caractères !"
+    });
+  }
+  if (!/[a-z]/.test(password)) {
+    return res.status(400).json({
+      message: "Le mot de passe doit contenir des minuscules !"
+    });
+  }
+  if (!/[A-Z]/.test(password)) {
+    return res.status(400).json({
+      message: "Le mot de passe doit contenir des majuscules !"
+    });
+  }
+  if (!/\d/.test(password)) {
+    return res.status(400).json({
+      message: "Le mot de passe doit contenir des chiffres !"
+    });
+  }
+  if (!/[@$!%*?&.]/.test(password)) {
+    return res.status(400).json({
+      message: "Le mot de passe doit contenir des caractères spéciaux: @$!%*?&"
+    });
+  }
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+  sql.query(
+    "UPDATE user SET password = ? WHERE id = ?",
+    [hashedPassword, req.body.id],
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        res.status(500).json({message: err});
+        return;
+      }
+
+      if (res.affectedRows == 0) {
+        res.status(500).json({kind: "not_found"});
+        return;
+      }
+
+      console.log("reset password user: ", {...req.body});
+      res.status(200).json({id: req.body.id, ...req.body});
+    }
+  );
 };
 
 module.exports = User;
