@@ -45,6 +45,10 @@ User.create = async (req, res, next) => {
       return;
     }
 
+    if (!req.body.phone.startsWith('+33')) {
+      req.body.phone = req.body.phone.replace(/^./g, '+33');
+    }
+
     sql.query("INSERT INTO user SET ?", req.body, (insertErr, insertResult) => {
       if (insertErr) {
         console.log("error: ", insertErr);
