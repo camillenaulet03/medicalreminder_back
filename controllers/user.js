@@ -80,7 +80,6 @@ User.login = (req, res, next) => {
       if (!passwordMatch) {
         return res.status(401).json({ message: "Identifiants invalides !" });
       }
-      const token = jwt.sign({userId: result[0].id}, process.env.JWT_KEY, {expiresIn: '24h'});
       const id = result[0].id;
       const phone = result[0].phone;
       const client = require('twilio')(process.env.SID, process.env.TOKEN);
@@ -105,7 +104,7 @@ User.login = (req, res, next) => {
               }
 
               console.log("update status: ", {id: req.body.email.toLowerCase(), ...req.body});
-              res.status(200).json({id, token: token});
+              res.status(200).json({id});
             }
           )
         })
@@ -124,6 +123,7 @@ User.verify = (req, res, next) => {
       return;
     }
     if (result.length) {
+      const token = jwt.sign({userId: result[0].id}, process.env.JWT_KEY, {expiresIn: '24h'});
       const client = require('twilio')(process.env.SID, process.env.TOKEN);
       const verifySid = process.env.VAD;
       client.verify.v2
@@ -145,7 +145,7 @@ User.verify = (req, res, next) => {
                 return;
               }
               console.log("update status");
-              res.status(200).json({message: 'success'});
+              res.status(200).json({token: token});
               return;
             })
         }).catch(() => {
@@ -263,6 +263,46 @@ User.changePassword = async (req, res, next) => {
 
       console.log("reset password user: ", {...req.body});
       res.status(200).json({id: req.body.id, ...req.body});
+    }
+  );
+};
+
+User.getPatients = async (req, res, next) => {
+  sql.query(
+    "SELECT id, first_name, last_name FROM user WHERE id_role = ?",
+    [5],
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        res.status(500).json({message: err});
+        return;
+      }
+
+      if (res.affectedRows == 0) {
+        res.status(500).json({kind: "not_found"});
+        return;
+      }
+      res.status(200).json({id: req.body.id, result});
+    }
+  );
+};
+
+User.getUser = async (req, res, next) => {
+  sql.query(
+    "SELECT id, first_name, last_name FROM user WHERE id = ?",
+    [req.query.id],
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        res.status(500).json({message: err});
+        return;
+      }
+
+      if (res.affectedRows == 0) {
+        res.status(500).json({kind: "not_found"});
+        return;
+      }
+      res.status(200).json({id: req.body.id, result});
     }
   );
 };
