@@ -123,6 +123,7 @@ User.verify = (req, res, next) => {
       return;
     }
     if (result.length) {
+      const role = result[0].id_role;
       const token = jwt.sign({userId: result[0].id}, process.env.JWT_KEY, {expiresIn: '24h'});
       const client = require('twilio')(process.env.SID, process.env.TOKEN);
       const verifySid = process.env.VAD;
@@ -145,7 +146,7 @@ User.verify = (req, res, next) => {
                 return;
               }
               console.log("update status");
-              res.status(200).json({token: token});
+              res.status(200).json({token: token, role: role});
               return;
             })
         }).catch(() => {
@@ -262,6 +263,30 @@ User.changePassword = async (req, res, next) => {
       }
 
       console.log("reset password user: ", {...req.body});
+      res.status(200).json({id: req.body.id, ...req.body});
+    }
+  );
+};
+
+User.changeRole = async (req, res, next) => {
+  const newRoleId = req.body.role;
+  const user = req.body.user;
+  sql.query(
+    "UPDATE user SET id_role = ? WHERE email = ?",
+    [newRoleId, user],
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        res.status(500).json({message: err});
+        return;
+      }
+
+      if (res.affectedRows == 0) {
+        res.status(500).json({kind: "not_found"});
+        return;
+      }
+
+      console.log("change role user: ", {...req.body});
       res.status(200).json({id: req.body.id, ...req.body});
     }
   );
