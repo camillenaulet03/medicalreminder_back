@@ -9,5 +9,6 @@ router.post('/verify', user.verify);
 router.post('/logout', [auth], user.logout);
 router.post('/reset-password', user.resetPassword);
 router.post('/change-password', user.changePassword);
+router.post('/change-role', user.changeRole);
 
 module.exports = router;
