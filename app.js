@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/user');
+const appointmentRoutes = require('./routes/appointment');
 
 const app = express();
 const cors = require("cors");
@@ -18,6 +19,7 @@ app.use(
 );
 app.use(bodyParser.json());
 app.use('/', userRoutes);
+app.use('/', appointmentRoutes);
 
 app.listen(3000);
 console.log('start port 3000');

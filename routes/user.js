@@ -10,5 +10,7 @@ router.post('/logout', [auth], user.logout);
 router.post('/reset-password', user.resetPassword);
 router.post('/change-password', user.changePassword);
 router.post('/change-role', user.changeRole);
+router.get('/patients', [auth], user.getPatients);
+router.get('/user', [auth], user.getUser);
 
 module.exports = router;
