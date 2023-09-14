@@ -158,9 +158,9 @@ User.verify = (req, res, next) => {
 }
 
 User.logout = (req, res, next) => {
-  const email = req.body.email;
+  const id = req.body.id;
 
-  sql.query(`SELECT * FROM user WHERE email = ?`,[email.toLowerCase()], (err, result) => {
+  sql.query(`SELECT * FROM user WHERE id = ?`,[id], (err, result) => {
     if (err) {
       console.log("error: ", err);
       res.status(500).json({message: err});
