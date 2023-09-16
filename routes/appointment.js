@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.get('/get-appointments', [auth], appointment.getAll);
 router.post('/create-appointment', [auth], appointment.create);
+router.delete('/delete-appointment', [auth], appointment.delete);
 
 module.exports = router;

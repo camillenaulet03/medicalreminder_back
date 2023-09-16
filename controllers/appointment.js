@@ -38,7 +38,7 @@ Appointment.getAll =  async (req, res, next) => {
     if (selectResult[0].id_role == 5) {
       
       // get patient appointement
-      sql.query("SELECT user.first_name, user.last_name, start_time, end_time, comment, state FROM appointment LEFT JOIN user ON user.id = appointment.id_practitioner WHERE appointment.id_patient = ?", req.query.id_user, (selectErr, selectResult) => {
+      sql.query("SELECT appointment.id, user.first_name, user.last_name, start_time, end_time, comment, state FROM appointment LEFT JOIN user ON user.id = appointment.id_practitioner WHERE appointment.id_patient = ?", req.query.id_user, (selectErr, selectResult) => {
         if (selectErr) {
           console.log("error: ", selectErr);
           res.status(500).json({message: selectErr});
@@ -49,7 +49,7 @@ Appointment.getAll =  async (req, res, next) => {
     } else {
 
       // get practitioner appointement
-      sql.query("SELECT user.first_name, user.last_name, start_time, end_time, comment, state FROM appointment LEFT JOIN user ON user.id = appointment.id_patient WHERE appointment.id_practitioner = ?", req.query.id_user, (selectErr, selectResult) => {
+      sql.query("SELECT appointment.id, user.first_name, user.last_name, start_time, end_time, comment, state FROM appointment LEFT JOIN user ON user.id = appointment.id_patient WHERE appointment.id_practitioner = ?", req.query.id_user, (selectErr, selectResult) => {
         if (selectErr) {
           console.log("error: ", selectErr);
           res.status(500).json({message: selectErr});
@@ -57,6 +57,29 @@ Appointment.getAll =  async (req, res, next) => {
         }
         res.status(200).json({selectResult});
       });
+    }
+  });
+};
+
+Appointment.delete =  async (req, res, next) => {
+  sql.query("SELECT id_role FROM user WHERE id = ?", [req.query.id_user], (selectErr, selectResult) => {
+    if (selectErr) {
+      console.log("error: ", selectErr);
+      res.status(500).json({message: selectErr});
+      return;
+    }
+
+    if (selectResult[0].id_role !== 5) {
+      sql.query("DELETE FROM appointment WHERE appointment.id = ?", req.query.id_appointment, (selectErr, selectResult) => {
+        if (selectErr) {
+          console.log("error: ", selectErr);
+          res.status(500).json({message: selectErr});
+          return;
+        }
+        res.status(200).json({selectResult});
+      });
+    } else {
+      res.status(500).json({message: 'No permission'});
     }
   });
 };
