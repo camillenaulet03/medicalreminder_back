@@ -38,7 +38,9 @@ Appointment.getAll =  async (req, res, next) => {
     if (selectResult[0].id_role == 5) {
       
       // get patient appointement
-      sql.query("SELECT appointment.id, user.first_name, user.last_name, start_time, end_time, comment, state FROM appointment LEFT JOIN user ON user.id = appointment.id_practitioner WHERE appointment.id_patient = ?", req.query.id_user, (selectErr, selectResult) => {
+      sql.query("SELECT appointment.id, user.first_name, user.last_name, start_time, end_time, comment, state " + 
+        "FROM appointment LEFT JOIN user ON user.id = appointment.id_practitioner WHERE appointment.id_patient = ?", 
+        req.query.id_user, (selectErr, selectResult) => {
         if (selectErr) {
           console.log("error: ", selectErr);
           res.status(500).json({message: selectErr});
