@@ -332,4 +332,57 @@ User.getUser = async (req, res, next) => {
   );
 };
 
+User.getUserByEmail = async (req, res, next) => {
+  sql.query(
+    "SELECT id, first_name, last_name FROM user WHERE email = ?",
+    [req.query.email],
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        res.status(500).json({message: err});
+        return;
+      }
+      
+      if (res.affectedRows == 0) {
+        res.status(500).json({kind: "not_found"});
+        return;
+      }
+      res.status(200).json(result);
+    }
+  );
+};
+
+User.shareCalendar = async (req, res, next) => {
+  console.log("share calendar");
+  sql.query("INSERT INTO sharedcalendar SET ?", req.body, (insertErr, insertResult) => {
+    if (insertErr) {
+      console.log("error: ", insertErr);
+      res.status(500).json({message: insertErr});
+      return;
+    }
+    res.status(201).json({insertResult});
+  });
+};
+
+User.getSharedUsers = async (req, res, next) => {
+  sql.query(
+    "SELECT u.id, u.last_name, u.first_name FROM sharedcalendar sc " + 
+    "LEFT JOIN user u ON sc.id_patient = u.id WHERE sc.id_practitioner = ?",
+    [req.query.id],
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        res.status(500).json({message: err});
+        return;
+      }
+      
+      if (res.affectedRows == 0) {
+        res.status(500).json({kind: "not_found"});
+        return;
+      }
+      res.status(200).json(result);
+    }
+  );
+};
+
 module.exports = User;

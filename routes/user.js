@@ -12,5 +12,8 @@ router.post('/change-password', user.changePassword);
 router.post('/change-role', user.changeRole);
 router.get('/patients', [auth], user.getPatients);
 router.get('/user', [auth], user.getUser);
+router.get('/user-by-email', [auth], user.getUserByEmail);
+router.post('/share-calendar', user.shareCalendar);
+router.get('/shared-users', user.getSharedUsers);
 
 module.exports = router;
