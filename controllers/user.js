@@ -83,9 +83,8 @@ User.login = (req, res, next) => {
       const id = result[0].id;
       const phone = result[0].phone;
       const client = require('twilio')(process.env.SID, process.env.TOKEN);
-      const verifySid = process.env.VAD;
       await client.verify.v2
-        .services(verifySid)
+        .services(process.env.VAD)
         .verifications.create({to: phone, channel: "sms", locale: 'fr'})
         .then((verification) => {
           sql.query(
@@ -294,8 +293,10 @@ User.changeRole = async (req, res, next) => {
 
 User.getPatients = async (req, res, next) => {
   sql.query(
-    "SELECT id, first_name, last_name FROM user WHERE id_role = ?",
-    [5],
+    "SELECT id, first_name, last_name FROM user " +
+    "LEFT JOIN sharedcalendar ON user.id = sharedcalendar.id_patient " +
+    "WHERE sharedcalendar.id_practitioner = ?",
+    [parseInt(req.query.id)],
     (err, result) => {
       if (err) {
         console.log("error: ", err);
