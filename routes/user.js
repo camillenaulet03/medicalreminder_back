@@ -4,6 +4,17 @@ const auth = require("../middlewares/auth");
 const router = express.Router();
 
 /**
+ * @swagger
+ * securityDefinitions:
+ *   Bearer:
+ *     type: apiKey
+ *     name: Authorization
+ *     in: header
+ *     description: >-
+ *       Enter the token with the `Bearer: ` prefix, e.g. "Bearer abcde12345".
+ */
+
+/**
  * tags:
  *   - name: User Auth
  */
@@ -113,7 +124,7 @@ router.post('/login', user.login);
 *     parameters:
 *       - in: body
 *         name: verify user
-*         description: Check your sms code and get the user token
+*         description: Enter the id user and the sms code 
 *         schema:
 *           type: object
 *           required:
@@ -132,7 +143,33 @@ router.post('/login', user.login);
 */
 router.post('/verify', user.verify);
 
-
+/**
+* @swagger
+* /logout:
+*   post:
+*     security:
+*       - Bearer: []
+*     tags:
+*       - User Auth
+*     description: Expire the token
+*     produces:
+*       - application/json
+*     parameters:
+*       - in: body
+*         description: send the id user
+*         schema:
+*           type: object
+*           required:
+*             - id
+*           properties:
+*             id:
+*               type: integer
+*     responses: 
+*       200 :
+*         description: OK
+*       default:
+*         description: Unexpected error
+*/
 router.post('/logout', [auth], user.logout);
 router.post('/reset-password', user.resetPassword);
 router.post('/change-password', user.changePassword);
