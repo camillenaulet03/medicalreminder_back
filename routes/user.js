@@ -17,6 +17,7 @@ const router = express.Router();
 /**
  * tags:
  *   - name: User Auth
+ *   - name: User
  */
 
 /**
@@ -171,12 +172,150 @@ router.post('/verify', user.verify);
 *         description: Unexpected error
 */
 router.post('/logout', [auth], user.logout);
+
+/**
+ * @swagger
+ * /reset-password:
+ *   post:
+ *     tags:
+ *       - User Auth
+ *     description: Send a email to reset the password
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - email
+ *           properties:
+ *             email:
+ *               type: string
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
 router.post('/reset-password', user.resetPassword);
+
+/**
+ * @swagger
+ * /change-password:
+ *   post:
+ *     tags:
+ *       - User Auth
+ *     description: Reset the password
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - id
+ *             - password
+ *           properties:
+ *             id:
+ *               type: integer
+ *             password:
+ *               type: string
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
 router.post('/change-password', user.changePassword);
+
 router.post('/change-role', user.changeRole);
+
+/**
+ * @swagger
+ * /patients:
+ *   get:
+ *     security:
+ *       - Bearer: []
+ *     tags:
+ *       - User 
+ *     description: get patients 
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: Enter the id of the practitioner 
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       403:
+ *         description: Forbidden, you need the Bearer token
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
 router.get('/patients', [auth], user.getPatients);
+
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     security:
+*        - Bearer: []
+ *     tags:
+ *       - User 
+ *     description: get patients 
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: Enter the user id
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       403:
+ *         description: Forbidden, you need the Bearer token
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
 router.get('/user', [auth], user.getUser);
+
+/**
+ * @swagger
+ * /user-by-email:
+ *   get:
+ *     security:
+ *       - Bearer: []
+ *     tags:
+ *       - User 
+ *     description: get a user with his email 
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: integer
+ *         description: Enter the user email
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       403:
+ *         description: Forbidden, you need the Bearer token
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
 router.get('/user-by-email', [auth], user.getUserByEmail);
+
 router.post('/share-calendar', user.shareCalendar);
 router.get('/shared-users', user.getSharedUsers);
 
