@@ -18,6 +18,7 @@ const router = express.Router();
  * tags:
  *   - name: User Auth
  *   - name: User
+ *   - name: Admin
  */
 
 /**
@@ -157,6 +158,7 @@ router.post('/verify', user.verify);
 *       - application/json
 *     parameters:
 *       - in: body
+*         name: logout user
 *         description: send the id user
 *         schema:
 *           type: object
@@ -184,6 +186,8 @@ router.post('/logout', [auth], user.logout);
  *       - application/json
  *     parameters:
  *       - in: body
+ *         name: email user
+ *         description: reset the password
  *         schema:
  *           type: object
  *           required:
@@ -211,6 +215,8 @@ router.post('/reset-password', user.resetPassword);
  *       - application/json
  *     parameters:
  *       - in: body
+ *         name: new password user
+ *         description: change the password
  *         schema:
  *           type: object
  *           required:
@@ -230,7 +236,43 @@ router.post('/reset-password', user.resetPassword);
  */
 router.post('/change-password', user.changePassword);
 
-router.post('/change-role', user.changeRole);
+/**
+ * @swagger
+ * /change-role:
+ *   post:
+ *     security:
+ *       - Bearer: []
+ *     tags:
+ *       - Admin 
+ *     description: change role of a user 
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: change role of a user
+ *         description: Enter the user email and his role
+ *         schema:
+ *           type: object
+ *           required:
+ *             - user
+ *             - role
+ *           properties:
+ *             user:
+ *               type: string
+ *               example: john.doe@yopmail.com
+ *             role:
+ *               type: integer
+ *               example: 2
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       403:
+ *         description: Forbidden, you need the Bearer token
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
+router.post('/change-role', [auth], user.changeRole);
 
 /**
  * @swagger
@@ -303,7 +345,7 @@ router.get('/user', [auth], user.getUser);
  *       - in: query
  *         name: email
  *         schema:
- *           type: integer
+ *           type: string
  *         description: Enter the user email
  *     responses: 
  *       200 :
@@ -316,7 +358,68 @@ router.get('/user', [auth], user.getUser);
  */
 router.get('/user-by-email', [auth], user.getUserByEmail);
 
-router.post('/share-calendar', user.shareCalendar);
+/**
+ * @swagger
+ * /share-calendar:
+ *   post:
+ *     security:
+ *       - Bearer: []
+ *     tags:
+ *       - User 
+ *     description: Share the calendar
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: users id
+ *         description: Enter the users id to share calendar
+ *         schema:
+ *           type: object
+ *           required:
+ *             - id_practitioner
+ *             - id_patient
+ *           properties:
+ *             id_practitioner:
+ *               type: integer
+ *             id_patient:
+ *               type: integer
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       403:
+ *         description: Forbidden, you need the Bearer token
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
+router.post('/share-calendar', [auth], user.shareCalendar);
+
+/**
+ * @swagger
+ * /shared-users:
+ *   get:
+ *     security:
+ *       - Bearer: []
+ *     tags:
+ *       - User 
+ *     description: get users who have access to your calendar
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: Enter the user id
+ *     responses: 
+ *       200 :
+ *         description: OK
+ *       403:
+ *         description: Forbidden, you need the Bearer token
+ *       default:
+ *         description: Unexpected error
+ *         
+ */
 router.get('/shared-users', user.getSharedUsers);
 
 module.exports = router;
