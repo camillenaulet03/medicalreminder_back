@@ -40,3 +40,7 @@ Before launching the application, you must import SQL files in your database : [
 ```
 npm run start
 ```
+
+## Swagger
+
+When the back is launched, you can access to the documentation : http://localhost:3000/api-docs/
