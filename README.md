@@ -27,6 +27,8 @@ DATABASE=
 SID=
 TOKEN=
 VAD=
+
+# send email
 USER=
 PASS=
 ```
