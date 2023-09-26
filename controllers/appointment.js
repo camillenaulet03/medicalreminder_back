@@ -70,19 +70,14 @@ Appointment.delete =  async (req, res, next) => {
       res.status(500).json({message: selectErr});
       return;
     }
-
-    if (selectResult[0].id_role !== 5) {
-      sql.query("DELETE FROM appointment WHERE appointment.id = ?", req.query.id_appointment, (selectErr, selectResult) => {
-        if (selectErr) {
-          console.log("error: ", selectErr);
-          res.status(500).json({message: selectErr});
-          return;
-        }
-        res.status(200).json({selectResult});
-      });
-    } else {
-      res.status(500).json({message: 'No permission'});
-    }
+    sql.query("DELETE FROM appointment WHERE appointment.id = ?", req.query.id_appointment, (selectErr, selectResult) => {
+      if (selectErr) {
+        console.log("error: ", selectErr);
+        res.status(500).json({message: selectErr});
+        return;
+      }
+      res.status(200).json({selectResult});
+    });
   });
 };
 

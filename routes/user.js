@@ -131,12 +131,12 @@ router.post('/login', user.login);
 *           type: object
 *           required:
 *             - id
-*             - phone
+*             - code
 *           properties:
 *             id:
 *               type: integer
-*             phone:
-*               type: integer
+*             code:
+*               type: string
 *     responses: 
 *       200 :
 *         description: Return user token and his role
@@ -207,7 +207,7 @@ router.post('/reset-password', user.resetPassword);
 /**
  * @swagger
  * /change-password:
- *   post:
+ *   patch:
  *     tags:
  *       - User Auth
  *     description: Reset the password
@@ -234,12 +234,12 @@ router.post('/reset-password', user.resetPassword);
  *         description: Unexpected error
  *         
  */
-router.post('/change-password', user.changePassword);
+router.patch('/change-password', user.changePassword);
 
 /**
  * @swagger
  * /change-role:
- *   post:
+ *   patch:
  *     security:
  *       - Bearer: []
  *     tags:
@@ -272,7 +272,7 @@ router.post('/change-password', user.changePassword);
  *         description: Unexpected error
  *         
  */
-router.post('/change-role', [auth], user.changeRole);
+router.patch('/change-role', [auth], user.changeRole);
 
 /**
  * @swagger
